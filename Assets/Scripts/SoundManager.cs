@@ -2,21 +2,17 @@ using UnityEngine;
 
 public class SoundManager : Singleton<SoundManager>
 {
-    [SerializeField] private AudioSource sfxSource;
-    [SerializeField] private AudioSource musicSource;
+    [SerializeField] private AudioSource sfxSource, musicSource;
 
-    [SerializeField] private AudioClip backgroundMusic;
-
-    public void PlaySound(AudioClip clip)
+    [ContextMenu("Change Music Volume")]
+    public void ChangeMusicVolume(float newVolume)
     {
-        sfxSource.PlayOneShot(clip);
+        musicSource.volume = newVolume;
     }
 
-
-    void Start()
+    [ContextMenu("Change SFX Volume")]
+    public void ChangeSFXVolume(float newVolume)
     {
-        musicSource.clip = backgroundMusic;
-        musicSource.loop = true;
-        musicSource.Play();
+        sfxSource.volume = newVolume;
     }
 }
