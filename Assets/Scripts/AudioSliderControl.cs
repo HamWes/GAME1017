@@ -19,6 +19,11 @@ public class AudioSliderControl : MonoBehaviour
         slider = GetComponent<Slider>();
     }
 
+    private void Start()
+    {
+        ChangeSoundVolume(slider.value);
+    }
+
     private void OnEnable()
     {
         slider.onValueChanged.AddListener(ChangeSoundVolume);
