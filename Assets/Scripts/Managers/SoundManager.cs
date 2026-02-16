@@ -1,8 +1,13 @@
 using UnityEngine;
 
-public class SoundManager : Singleton<SoundManager>
+public class SoundManager : MonoBehaviour
 {
     [SerializeField] private AudioSource sfxSource, musicSource;
+
+    private void Awake()
+    {
+        DontDestroyOnLoad(gameObject);
+    }
 
     [ContextMenu("Change Music Volume")]
     public void ChangeMusicVolume(float newVolume)

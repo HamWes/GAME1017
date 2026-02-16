@@ -8,7 +8,7 @@ public enum ESoundType
     SFX
 }
 
-public class AudioSliderControl : MonoBehaviour
+public class AudioSliderController : MonoBehaviour
 {
     [SerializeField] private ESoundType soundType;
 
@@ -39,11 +39,11 @@ public class AudioSliderControl : MonoBehaviour
         switch (soundType)
         {
             case ESoundType.Music:
-                SoundManager.Instance.ChangeMusicVolume(newVolume);
+                GameManager.Instance.SoundManager.ChangeMusicVolume(newVolume);
                 break;
 
             case ESoundType.SFX:
-                SoundManager.Instance.ChangeSFXVolume(newVolume);
+                GameManager.Instance.SoundManager.ChangeSFXVolume(newVolume);
                 break;
         }
     }
