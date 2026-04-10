@@ -15,6 +15,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float groundCheckDistance = 0.21f;
     [SerializeField] private LayerMask groundLayer;
 
+    [Header("Game Over")]
+    [SerializeField] private float fallGameOverY = -8f;
+
     private Rigidbody2D rb;
     private Vector3 startPosition;
 
@@ -38,6 +41,12 @@ public class PlayerController : MonoBehaviour
     private void Update()
     {
         if (GameManager.Instance.CurrentGameState != GameState.InGame) return;
+
+        if (transform.position.y < fallGameOverY)
+        {
+            GameManager.Instance.GameOver();
+            return;
+        }
 
         if (groundCheck != null)
         {

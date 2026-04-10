@@ -13,6 +13,8 @@ public class SegmentSpawner : MonoBehaviour
     [SerializeField] private float maxGap = 1.5f;
     [SerializeField] private float minHeightOffset = -1.5f;
     [SerializeField] private float maxHeightOffset = 1.5f;
+    [SerializeField] private float minSegmentY = -4f;
+    [SerializeField] private float maxSegmentY = 4f;
 
     [Header("Cleanup")]
     [SerializeField] private float despawnBehindDistance = 25f; 
@@ -30,8 +32,10 @@ public class SegmentSpawner : MonoBehaviour
         }
         segments.Clear();
 
+        float firstSegmentY = Mathf.Clamp(player.position.y - 1f, minSegmentY, maxSegmentY);
+
         lastSegment = SpawnSegment(segmentPrefabs[0],
-            new Vector3(player.position.x, player.position.y - 1f, 0f));
+            new Vector3(player.position.x, firstSegmentY, 0f));
 
         lastRenderer = lastSegment.GetComponent<Renderer>();
 
@@ -64,7 +68,7 @@ public class SegmentSpawner : MonoBehaviour
         Renderer newRend = newSeg.GetComponent<Renderer>();
 
         float xSpawn = lastRenderer.bounds.max.x + (newRend.bounds.size.x / 2f) + gap;
-        float ySpawn = lastSegment.transform.position.y + heightOffset;
+        float ySpawn = Mathf.Clamp(lastSegment.transform.position.y + heightOffset, minSegmentY, maxSegmentY);
 
         newSeg.transform.position = new Vector3(xSpawn, ySpawn, 0f);
 
