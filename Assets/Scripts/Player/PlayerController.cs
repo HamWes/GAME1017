@@ -12,7 +12,7 @@ public class PlayerController : MonoBehaviour
 
     [Header("Ground Check")]
     [SerializeField] private Transform groundCheck;
-    [SerializeField] private float groundCheckDistance = 0.2f;
+    [SerializeField] private float groundCheckDistance = 0.21f;
     [SerializeField] private LayerMask groundLayer;
 
     private Rigidbody2D rb;

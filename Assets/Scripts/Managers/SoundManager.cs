@@ -1,23 +1,26 @@
 using UnityEngine;
 
-public class SoundManager : MonoBehaviour
+public class SoundManager : Singleton<SoundManager>
 {
-    [SerializeField] private AudioSource sfxSource, musicSource;
+    [SerializeField] private AudioSource sfxSource;
+    [SerializeField] private AudioSource musicSource;
 
-    private void Awake()
-    {
-        DontDestroyOnLoad(gameObject);
-    }
+    public float SFXVolume => sfxSource != null ? sfxSource.volume : 0f;
+    public float MusicVolume => musicSource != null ? musicSource.volume : 0f;
 
-    [ContextMenu("Change Music Volume")]
     public void ChangeMusicVolume(float newVolume)
     {
-        musicSource.volume = newVolume;
+        if (musicSource != null)
+        {
+            musicSource.volume = newVolume;
+        }
     }
 
-    [ContextMenu("Change SFX Volume")]
     public void ChangeSFXVolume(float newVolume)
     {
-        sfxSource.volume = newVolume;
+        if (sfxSource != null)
+        {
+            sfxSource.volume = newVolume;
+        }
     }
 }
