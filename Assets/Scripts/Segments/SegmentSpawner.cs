@@ -13,13 +13,15 @@ public class SegmentSpawner : MonoBehaviour
     [SerializeField] private float maxGap = 1.5f;
     [SerializeField] private float minHeightOffset = -1.5f;
     [SerializeField] private float maxHeightOffset = 1.5f;
-    [SerializeField] private float minSegmentY = -4f;
-    [SerializeField] private float maxSegmentY = 4f;
+    [SerializeField] private float minSegmentY = -1f;
+    [SerializeField] private float maxSegmentY = 1f;
 
     [Header("Cleanup")]
     [SerializeField] private float despawnBehindDistance = 25f; 
 
     private readonly List<GameObject> segments = new();
+
+    private int lastIndex;
 
     private GameObject lastSegment;
     private Renderer lastRenderer;
@@ -34,8 +36,8 @@ public class SegmentSpawner : MonoBehaviour
 
         float firstSegmentY = Mathf.Clamp(player.position.y - 1f, minSegmentY, maxSegmentY);
 
-        lastSegment = SpawnSegment(segmentPrefabs[0],
-            new Vector3(player.position.x, firstSegmentY, 0f));
+        lastSegment = SpawnSegment(segmentPrefabs[0], new Vector3(player.position.x, firstSegmentY, 0f));
+        lastIndex = 0;
 
         lastRenderer = lastSegment.GetComponent<Renderer>();
 
@@ -62,7 +64,26 @@ public class SegmentSpawner : MonoBehaviour
         float gap = Random.Range(minGap, maxGap);
         float heightOffset = Random.Range(minHeightOffset, maxHeightOffset);
 
-        GameObject prefab = segmentPrefabs[Random.Range(0, segmentPrefabs.Length)];
+        List<int> possibleIndices = new();
+
+        if (lastIndex == 1 || lastIndex == 3)
+        {
+            possibleIndices.Add(0);
+        }
+        else
+        {
+            for (int i = 0; i < segmentPrefabs.Length;  i++)
+            {
+                if (lastIndex == i) continue;
+
+                possibleIndices.Add(i);
+            }
+        }
+
+        int ind = Random.Range(0, possibleIndices.Count);
+        int index = possibleIndices[ind];
+
+        GameObject prefab = segmentPrefabs[index];
 
         GameObject newSeg = Instantiate(prefab, transform);
         Renderer newRend = newSeg.GetComponent<Renderer>();
@@ -74,6 +95,7 @@ public class SegmentSpawner : MonoBehaviour
 
         segments.Add(newSeg);
 
+        lastIndex = index;
         lastSegment = newSeg;
         lastRenderer = newRend;
     }

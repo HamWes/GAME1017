@@ -16,7 +16,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private LayerMask groundLayer;
 
     [Header("Game Over")]
-    [SerializeField] private float fallGameOverY = -8f;
+    [SerializeField] private float fallGameOverY = -5f;
 
     private Rigidbody2D rb;
     private Vector3 startPosition;
@@ -81,6 +81,14 @@ public class PlayerController : MonoBehaviour
         transform.position = startPosition;
         rb.linearVelocity = Vector2.zero;
         rb.simulated = false;
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.GetComponent<Obstacle>())
+        {
+            GameManager.Instance.GameOver();
+        }
     }
 
     private void OnEnable()

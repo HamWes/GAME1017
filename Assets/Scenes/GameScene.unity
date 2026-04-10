@@ -660,11 +660,16 @@ MonoBehaviour:
   player: {fileID: 264608843}
   segmentPrefabs:
   - {fileID: 894750807172270295, guid: 9a07d9b0e7e55a048b81bc185c69f887, type: 3}
+  - {fileID: 279804177428735472, guid: 162424b4cadc3094aa7c3483e92af266, type: 3}
+  - {fileID: 8986610402916404269, guid: 2ca1aa82a5d8e1144a732b0e4fa99c24, type: 3}
+  - {fileID: 1628701317329295363, guid: 4a6d2fc40277f4743b6d97631dcad564, type: 3}
   spawnAheadDistance: 15
   minGap: 0.5
   maxGap: 1.5
   minHeightOffset: -1.5
   maxHeightOffset: 1.5
+  minSegmentY: -1
+  maxSegmentY: 1
   despawnBehindDistance: 25
 --- !u!1 &449481338
 GameObject:
@@ -1583,6 +1588,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIManager
   playButton: {fileID: 1709671835}
+  resetButton: {fileID: 0}
   timerText: {fileID: 449481339}
   finalTimeText: {fileID: 0}
 --- !u!4 &798307082
