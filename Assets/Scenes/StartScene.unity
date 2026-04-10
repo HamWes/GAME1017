@@ -836,6 +836,9 @@ MonoBehaviour:
   preserveOnLoad: 1
   soundManager: {fileID: 968286402}
   uiManager: {fileID: 798307081}
+  difficultyIncreaseInterval: 10
+  speedIncreasePercent: 0.1
+  gapIncreaseAmount: 0.1
 --- !u!1 &671325946
 GameObject:
   m_ObjectHideFlags: 0

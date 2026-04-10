@@ -17,10 +17,22 @@ public class GameManager : Singleton<GameManager>
     // StartScene now owns the shared managers, so these are assigned once in the inspector instead of using lazy getter/setter lookups that could bind to disabled duplicates in GameScene.
     [SerializeField] private SoundManager soundManager;
     [SerializeField] private UIManager uiManager;
+    [SerializeField] private float difficultyIncreaseInterval = 5f;
+    [SerializeField] private float speedIncreasePercent = 0.1f;
+    [SerializeField] private float gapIncreaseAmount = 0.1f;
+    [SerializeField] private float maxGapSize = 2.5f;
 
     // This flag lets the title scene request a run before GameScene has finished loading.
     private bool startGameOnSceneLoad;
     private bool hasInitializedActiveScene;
+    private float nextDifficultyTime;
+    private float originalPlayerSpeed;
+    private float originalMinGap;
+    private float originalMaxGap;
+    private bool hasDifficultyDefaults;
+    private PlayerController player;
+    private SegmentSpawner segmentSpawner;
+    private BackgroundManager backgroundManager;
 
     public GameState CurrentGameState { get; private set; } = GameState.InMenu;
     public float CurrentRunTime { get; private set; }
@@ -69,6 +81,7 @@ public class GameManager : Singleton<GameManager>
 
         // The run timer only advances during active gameplay.
         CurrentRunTime += Time.deltaTime;
+        IncreaseDifficulty();
         UIManager?.UpdateTimerDisplay(CurrentRunTime);
     }
 
@@ -92,11 +105,10 @@ public class GameManager : Singleton<GameManager>
             return;
         }
 
-        PlayerController player = FindFirstObjectByType<PlayerController>();
-        BackgroundManager backgroundManager = FindFirstObjectByType<BackgroundManager>();
-
         CurrentRunTime = 0f;
+        nextDifficultyTime = difficultyIncreaseInterval;
         startGameOnSceneLoad = false;
+        ResetDifficulty();
         player?.ResetPlayer();
         backgroundManager?.Initialize();
         SetGameState(GameState.InMenu);
@@ -120,6 +132,7 @@ public class GameManager : Singleton<GameManager>
     {
         startGameOnSceneLoad = false;
         CurrentRunTime = 0f;
+        nextDifficultyTime = difficultyIncreaseInterval;
         SetGameState(GameState.InMenu);
         SceneManager.LoadScene(StartSceneName);
     }
@@ -139,6 +152,19 @@ public class GameManager : Singleton<GameManager>
         hasInitializedActiveScene = true;
         UIManager?.BindSceneButtons(scene);
 
+        if (scene.name == GameSceneName)
+        {
+            player = FindFirstObjectByType<PlayerController>();
+            segmentSpawner = FindFirstObjectByType<SegmentSpawner>();
+            backgroundManager = FindFirstObjectByType<BackgroundManager>();
+        }
+        else
+        {
+            player = null;
+            segmentSpawner = null;
+            backgroundManager = null;
+        }
+
         switch (scene.name)
         {
             case StartSceneName:
@@ -155,6 +181,7 @@ public class GameManager : Singleton<GameManager>
                 {
                     // Opening GameScene directly in the editor should still show a clean menu state.
                     CurrentRunTime = 0f;
+                    nextDifficultyTime = difficultyIncreaseInterval;
                     SetGameState(GameState.InMenu);
                     UIManager?.InitializeForMenu();
                 }
@@ -169,15 +196,13 @@ public class GameManager : Singleton<GameManager>
 
     private void StartRun(bool resetTimer)
     {
-        // Gameplay systems live in GameScene, so we grab them from the active scene when a run starts instead of treating them like persistent managers.
-        PlayerController player = FindFirstObjectByType<PlayerController>();
-        SegmentSpawner segmentSpawner = FindFirstObjectByType<SegmentSpawner>();
-        BackgroundManager backgroundManager = FindFirstObjectByType<BackgroundManager>();
-
         if (resetTimer)
         {
             CurrentRunTime = 0f;
         }
+
+        ResetDifficulty();
+        nextDifficultyTime = difficultyIncreaseInterval;
 
         SetGameState(GameState.InGame);
 
@@ -188,6 +213,50 @@ public class GameManager : Singleton<GameManager>
         UIManager?.ShowRunStarted(CurrentRunTime);
 
         startGameOnSceneLoad = false;
+    }
+
+    public void IncreaseDifficulty()
+    {
+        if (CurrentRunTime < nextDifficultyTime || !player || !segmentSpawner)
+        {
+            return;
+        }
+
+        if (!hasDifficultyDefaults)
+        {
+            originalPlayerSpeed = player.speed;
+            originalMinGap = segmentSpawner.minGap;
+            originalMaxGap = segmentSpawner.maxGap;
+            hasDifficultyDefaults = true;
+        }
+
+        float maxPlayerSpeed = originalPlayerSpeed * 2f;
+
+        player.speed = Mathf.Min(player.speed * (1f + speedIncreasePercent), maxPlayerSpeed);
+        segmentSpawner.minGap = Mathf.Min(segmentSpawner.minGap + gapIncreaseAmount, maxGapSize);
+        segmentSpawner.maxGap = Mathf.Min(segmentSpawner.maxGap + gapIncreaseAmount, maxGapSize);
+
+        nextDifficultyTime += difficultyIncreaseInterval;
+    }
+
+    private void ResetDifficulty()
+    {
+        if (!player || !segmentSpawner)
+        {
+            return;
+        }
+
+        if (!hasDifficultyDefaults)
+        {
+            originalPlayerSpeed = player.speed;
+            originalMinGap = segmentSpawner.minGap;
+            originalMaxGap = segmentSpawner.maxGap;
+            hasDifficultyDefaults = true;
+        }
+
+        player.speed = originalPlayerSpeed;
+        segmentSpawner.minGap = originalMinGap;
+        segmentSpawner.maxGap = originalMaxGap;
     }
 
     private void SetGameState(GameState state)

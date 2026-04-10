@@ -9,8 +9,8 @@ public class SegmentSpawner : MonoBehaviour
 
     [Header("Spawning")]
     [SerializeField] private float spawnAheadDistance = 15f;   
-    [SerializeField] private float minGap = 0.5f;
-    [SerializeField] private float maxGap = 1.5f;
+    public float minGap = 0.5f;
+    public float maxGap = 1.5f;
     [SerializeField] private float minHeightOffset = -1.5f;
     [SerializeField] private float maxHeightOffset = 1.5f;
     [SerializeField] private float minSegmentY = -1f;
