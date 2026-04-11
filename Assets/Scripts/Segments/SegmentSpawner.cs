@@ -66,6 +66,7 @@ public class SegmentSpawner : MonoBehaviour
 
         List<int> possibleIndices = new();
 
+        // The spawner forces a plain platform next so the run keeps a recoverable rhythm instead of stacking hazards back-to-back
         if (lastIndex == 1 || lastIndex == 3)
         {
             possibleIndices.Add(0);

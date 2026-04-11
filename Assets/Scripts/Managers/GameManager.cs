@@ -16,7 +16,7 @@ public class GameManager : Singleton<GameManager>
     private const string GameSceneName = "GameScene";
     private const string GameOverSceneName = "GameOverScene";
 
-    // StartScene now owns the shared managers, so these are assigned once in the inspector instead of using lazy getter/setter lookups that could bind to disabled duplicates in GameScene.
+    // StartScene owns the shared managers and they persist across the rest of the run.
     [SerializeField] private SoundManager soundManager;
     [SerializeField] private UIManager uiManager;
     [SerializeField] private float difficultyIncreaseInterval = 5f;
@@ -26,7 +26,6 @@ public class GameManager : Singleton<GameManager>
 
     // This flag lets the title scene request a run before GameScene has finished loading.
     private bool startGameOnSceneLoad;
-    private bool hasInitializedActiveScene;
     private float nextDifficultyTime;
     private float originalPlayerSpeed;
     private float originalMinGap;
@@ -62,7 +61,7 @@ public class GameManager : Singleton<GameManager>
 
     private void Start()
     {
-        if (Instance != this || hasInitializedActiveScene)
+        if (Instance != this)
         {
             return;
         }
@@ -119,7 +118,6 @@ public class GameManager : Singleton<GameManager>
         backgroundManager?.Initialize();
         SetGameState(GameState.InMenu);
         UIManager?.InitializeForMenu();
-        UIManager?.UpdateLeaderboardDisplay(BestTime, leaderboardScores);
     }
 
     public void GameOver()
@@ -155,11 +153,11 @@ public class GameManager : Singleton<GameManager>
 
     private void HandleSceneLoaded(Scene scene)
     {
-        hasInitializedActiveScene = true;
         UIManager?.BindSceneButtons(scene);
 
         if (scene.name == GameSceneName)
         {
+            // Gameplay objects are rebound whenever GameScene loads.
             player = FindFirstObjectByType<PlayerController>();
             segmentSpawner = FindFirstObjectByType<SegmentSpawner>();
             backgroundManager = FindFirstObjectByType<BackgroundManager>();
@@ -183,15 +181,6 @@ public class GameManager : Singleton<GameManager>
                 if (startGameOnSceneLoad)
                 {
                     StartRun(resetTimer: true);
-                }
-                else
-                {
-                    // Opening GameScene directly in the editor should still show a clean menu state.
-                    CurrentRunTime = 0f;
-                    nextDifficultyTime = difficultyIncreaseInterval;
-                    SetGameState(GameState.InMenu);
-                    UIManager?.InitializeForMenu();
-                    UIManager?.UpdateLeaderboardDisplay(BestTime, leaderboardScores);
                 }
                 break;
 
@@ -239,6 +228,8 @@ public class GameManager : Singleton<GameManager>
             hasDifficultyDefaults = true;
         }
 
+        // Difficulty ramps up by combining faster forward movement with wider jumps,
+        // while keeping both values capped so a long run stays playable.
         float maxPlayerSpeed = originalPlayerSpeed * 2f;
 
         player.speed = Mathf.Min(player.speed * (1f + speedIncreasePercent), maxPlayerSpeed);
@@ -279,6 +270,8 @@ public class GameManager : Singleton<GameManager>
     {
         if (player != null)
         {
+            // Let the player feedback finish before saving and changing scenes so the loss
+            // reads as an intentional transition instead of an instant cut.
             yield return StartCoroutine(player.PlayGameOverFeedback());
         }
 

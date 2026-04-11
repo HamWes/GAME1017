@@ -44,12 +44,12 @@ public class PlayerController : MonoBehaviour
 
     public void Initialize()
     {
+        // The current spawn position becomes the reset point for the next menu/restart cycle.
         startPosition = transform.position;
         isLosing = false;
 
         rb.simulated = true;
         rb.gravityScale = 3f;
-        RestoreSpriteColor();
     }
 
     private void Update()
@@ -96,7 +96,6 @@ public class PlayerController : MonoBehaviour
         transform.position = startPosition;
         rb.linearVelocity = Vector2.zero;
         rb.simulated = false;
-        RestoreSpriteColor();
     }
 
     public IEnumerator PlayGameOverFeedback()
@@ -116,6 +115,7 @@ public class PlayerController : MonoBehaviour
             yield break;
         }
 
+        // A short color cycle gives the player a readable hit/loss cue before leaving the scene.
         Color[] flashColors =
         {
             Color.green,
@@ -134,7 +134,10 @@ public class PlayerController : MonoBehaviour
             colorIndex = (colorIndex + 1) % flashColors.Length;
         }
 
-        RestoreSpriteColor();
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.color = originalColor;
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -164,13 +167,5 @@ public class PlayerController : MonoBehaviour
             groundCheck.position,
             groundCheck.position + Vector3.down * groundCheckDistance
         );
-    }
-
-    private void RestoreSpriteColor()
-    {
-        if (spriteRenderer != null)
-        {
-            spriteRenderer.color = originalColor;
-        }
     }
 }

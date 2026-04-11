@@ -12,6 +12,7 @@ public class SaveSystem : MonoBehaviour
 
     public static void SaveTimer(float timer)
     {
+        // Reload before writing so each run updates the leaderboard
         leaderboard.Clear();
         leaderboard.AddRange(LoadLeaderboard());
 
@@ -69,6 +70,7 @@ public class SaveSystem : MonoBehaviour
 
     private static void SortAndTrimLeaderboard(List<float> scores)
     {
+        // A stable "top list" before display with duplicate removal
         scores.Sort((a, b) => b.CompareTo(a));
 
         for (int i = scores.Count - 1; i > 0; i--)

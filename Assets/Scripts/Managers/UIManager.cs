@@ -5,6 +5,7 @@ using UnityEngine.SceneManagement;
 
 public class UIManager : MonoBehaviour
 {
+    private const string StartSceneName = "StartScene";
     private const string GameSceneName = "GameScene";
 
     [SerializeField] private GameObject playButton;
@@ -33,7 +34,7 @@ public class UIManager : MonoBehaviour
         SetActive(resetButton, false);
         SetActive(GetTimerDisplay(), false);
         SetActive(GetFinalTimeDisplay(), false);
-        SetActive(GetLeaderboardDisplay(), leaderboardDisplay != null);
+        SetActive(GetLeaderboardDisplay(), leaderboardDisplay != null && SceneManager.GetActiveScene().name == StartSceneName);
         UpdateTimerDisplay(0f);
         UpdateFinalTimeDisplay(null);
     }
