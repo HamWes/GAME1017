@@ -6,6 +6,7 @@ public class Leaderboard : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI leaderboardText;
 
+    // Builds the visible leaderboard text using the saved best time plus the ranked score list
     public void Initialize(List<float> leaderboard, float bestTime)
     {
         if (leaderboardText == null)
@@ -31,6 +32,7 @@ public class Leaderboard : MonoBehaviour
         leaderboardText.text = leaderboardString;
     }
 
+    // Clears the leaderboard text when the display needs to be reset
     public void Clear()
     {
         if (leaderboardText != null)

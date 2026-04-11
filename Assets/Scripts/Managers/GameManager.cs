@@ -46,6 +46,7 @@ public class GameManager : Singleton<GameManager>
     private bool TimerRunning => CurrentGameState == GameState.InGame;
     private readonly List<float> leaderboardScores = new();
 
+    // Sets up the persistent manager, loads saved score data, and hooks scene load events once
     protected override void Awake()
     {
         base.Awake();
@@ -59,6 +60,7 @@ public class GameManager : Singleton<GameManager>
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
+    // Runs the same scene setup on the first loaded scene so startup and later scene loads share one path
     private void Start()
     {
         if (Instance != this)
@@ -77,6 +79,7 @@ public class GameManager : Singleton<GameManager>
         }
     }
 
+    // Advances the run timer only during gameplay, then updates difficulty and the visible timer UI
     private void Update()
     {
         if (!TimerRunning)
@@ -84,12 +87,13 @@ public class GameManager : Singleton<GameManager>
             return;
         }
 
-        // The run timer only advances during active gameplay.
+        // The run timer only advances during active gameplay
         CurrentRunTime += Time.deltaTime;
         IncreaseDifficulty();
         UIManager?.UpdateTimerDisplay(CurrentRunTime);
     }
 
+    // Requests gameplay from any scene, loading GameScene first when needed
     public void PlayGame()
     {
         startGameOnSceneLoad = true;
@@ -103,6 +107,7 @@ public class GameManager : Singleton<GameManager>
         SceneManager.LoadScene(GameSceneName);
     }
 
+    // Resets the run back to a menu state inside GameScene without leaving the scene
     public void RestartGame()
     {
         if (SceneManager.GetActiveScene().name != GameSceneName)
@@ -120,6 +125,7 @@ public class GameManager : Singleton<GameManager>
         UIManager?.InitializeForMenu();
     }
 
+    // Captures the finished run time once and starts the delayed loss transition
     public void GameOver()
     {
         if (CurrentGameState == GameState.GameOver || gameOverRoutine != null)
@@ -132,6 +138,7 @@ public class GameManager : Singleton<GameManager>
         gameOverRoutine = StartCoroutine(HandleGameOverTransition());
     }
 
+    // Returns to the title scene and clears run-specific state.
     public void ReturnToTitle()
     {
         startGameOnSceneLoad = false;
@@ -141,6 +148,7 @@ public class GameManager : Singleton<GameManager>
         SceneManager.LoadScene(StartSceneName);
     }
 
+    // Unity event callback that forwards all scene setup through the shared handler below
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         if (Instance != this)
@@ -151,13 +159,14 @@ public class GameManager : Singleton<GameManager>
         HandleSceneLoaded(scene);
     }
 
+    // Rebinds scene-specific gameplay objects and updates UI/state based on the scene that just loaded
     private void HandleSceneLoaded(Scene scene)
     {
         UIManager?.BindSceneButtons(scene);
 
         if (scene.name == GameSceneName)
         {
-            // Gameplay objects are rebound whenever GameScene loads.
+            // Gameplay objects are rebound whenever GameScene loads
             player = FindFirstObjectByType<PlayerController>();
             segmentSpawner = FindFirstObjectByType<SegmentSpawner>();
             backgroundManager = FindFirstObjectByType<BackgroundManager>();
@@ -192,6 +201,7 @@ public class GameManager : Singleton<GameManager>
         }
     }
 
+    // Starts a fresh run by resetting state and initializing the gameplay systems used in GameScene
     private void StartRun(bool resetTimer)
     {
         if (resetTimer)
@@ -213,6 +223,7 @@ public class GameManager : Singleton<GameManager>
         startGameOnSceneLoad = false;
     }
 
+    // Gradually increases challenge over time by raising speed and jump gap values with safe caps
     public void IncreaseDifficulty()
     {
         if (CurrentRunTime < nextDifficultyTime || !player || !segmentSpawner)
@@ -228,8 +239,6 @@ public class GameManager : Singleton<GameManager>
             hasDifficultyDefaults = true;
         }
 
-        // Difficulty ramps up by combining faster forward movement with wider jumps,
-        // while keeping both values capped so a long run stays playable.
         float maxPlayerSpeed = originalPlayerSpeed * 2f;
 
         player.speed = Mathf.Min(player.speed * (1f + speedIncreasePercent), maxPlayerSpeed);
@@ -239,6 +248,7 @@ public class GameManager : Singleton<GameManager>
         nextDifficultyTime += difficultyIncreaseInterval;
     }
 
+    // Restores the original gameplay values so each run starts from the same baseline
     private void ResetDifficulty()
     {
         if (!player || !segmentSpawner)
@@ -259,6 +269,7 @@ public class GameManager : Singleton<GameManager>
         segmentSpawner.maxGap = originalMaxGap;
     }
 
+    // Pulls the saved best time and leaderboard into memory for UI display and game-over handling
     private void LoadSavedScores()
     {
         BestTime = SaveSystem.LoadBestTime();
@@ -266,12 +277,11 @@ public class GameManager : Singleton<GameManager>
         leaderboardScores.AddRange(SaveSystem.LoadLeaderboard());
     }
 
+    // Waits for the player loss feedback, then saves scores, refreshes the UI data, and loads GameOverScene
     private IEnumerator HandleGameOverTransition()
     {
         if (player != null)
         {
-            // Let the player feedback finish before saving and changing scenes so the loss
-            // reads as an intentional transition instead of an instant cut.
             yield return StartCoroutine(player.PlayGameOverFeedback());
         }
 

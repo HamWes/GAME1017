@@ -10,6 +10,7 @@ public class SaveSystem : MonoBehaviour
     private const int maxScoresSize = 5;
     private const float DuplicateScoreTolerance = 0.001f;
 
+    // Saves a finished run, keeps the leaderboard sorted/top-five, and updates the stored best time.
     public static void SaveTimer(float timer)
     {
         // Reload before writing so each run updates the leaderboard
@@ -52,6 +53,7 @@ public class SaveSystem : MonoBehaviour
         return PlayerPrefs.GetFloat(BestTimeKey, 0f);
     }
 
+    // Rebuilds the leaderboard list from PlayerPrefs using the indexed score keys
     public static List<float> LoadLeaderboard()
     {
         leaderboard.Clear();
@@ -87,6 +89,7 @@ public class SaveSystem : MonoBehaviour
         }
     }
 
+    // Writes the current leaderboard back to PlayerPrefs and clears any leftover older entries
     private static void SaveLeaderboardEntries(List<float> scores)
     {
         PlayerPrefs.SetInt(LeaderboardCountKey, scores.Count);

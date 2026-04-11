@@ -14,6 +14,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TMP_Text finalTimeText;
     [SerializeField] private Leaderboard leaderboardDisplay;
 
+    // Finds the gameplay buttons that live in GameScene so this persistent UI manager can control them
     public void BindSceneButtons(Scene scene)
     {
         playButton = null;
@@ -28,6 +29,7 @@ public class UIManager : MonoBehaviour
         resetButton = FindSceneButton(scene, GameManagerAction.RestartGame);
     }
 
+    // Shows the menu-state UI: Play visible, gameplay-only elements hidden, leaderboard visible on StartScene
     public void InitializeForMenu()
     {
         SetActive(playButton, true);
@@ -39,6 +41,7 @@ public class UIManager : MonoBehaviour
         UpdateFinalTimeDisplay(null);
     }
 
+    // Switches the UI into run mode by showing the timer/reset button and hiding menu-only displays
     public void ShowRunStarted(float currentTime)
     {
         SetActive(playButton, false);
@@ -50,11 +53,13 @@ public class UIManager : MonoBehaviour
         UpdateFinalTimeDisplay(null);
     }
 
+    // Formats the active run time and sends it to the timer text
     public void UpdateTimerDisplay(float currentTime)
     {
         SetText(timerText, FormatTime(currentTime));
     }
 
+    // Shows the final-time view after a loss and re-enables the leaderboard display
     public void ShowGameOver(float finalTime)
     {
         SetActive(playButton, false);
@@ -65,6 +70,7 @@ public class UIManager : MonoBehaviour
         UpdateFinalTimeDisplay(finalTime);
     }
 
+    // Updates or clears the final-time label depending on whether a finished run value exists
     private void UpdateFinalTimeDisplay(float? finalTime)
     {
         if (finalTimeText == null)
@@ -77,6 +83,7 @@ public class UIManager : MonoBehaviour
             : string.Empty;
     }
 
+    // Passes best-time and score-list data to the leaderboard formatter component
     public void UpdateLeaderboardDisplay(float bestTime, List<float> leaderboard)
     {
         if (leaderboardDisplay == null)
@@ -99,6 +106,7 @@ public class UIManager : MonoBehaviour
         return $"{minutes:00}:{seconds:00.00}";
     }
 
+    // Null-safe helper so callers do not repeat the same guard code
     private static void SetActive(GameObject target, bool isActive) 
     {
         if (target != null)
@@ -107,6 +115,7 @@ public class UIManager : MonoBehaviour
         }
     }
 
+    // Null-safe helper used by the timer and final-time labels
     private static void SetText(TMP_Text target, string value)
     {
         if (target != null)
@@ -130,6 +139,7 @@ public class UIManager : MonoBehaviour
         return leaderboardDisplay != null ? leaderboardDisplay.gameObject : null;
     }
 
+    // Searches a specific scene for the button assigned to a given GameManager action
     private static GameObject FindSceneButton(Scene scene, GameManagerAction action)
     {
         TitleScreenButton[] buttons = FindObjectsByType<TitleScreenButton>(FindObjectsSortMode.None);
