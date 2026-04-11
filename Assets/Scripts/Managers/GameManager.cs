@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -30,6 +32,7 @@ public class GameManager : Singleton<GameManager>
     private float originalMinGap;
     private float originalMaxGap;
     private bool hasDifficultyDefaults;
+    private Coroutine gameOverRoutine;
     private PlayerController player;
     private SegmentSpawner segmentSpawner;
     private BackgroundManager backgroundManager;
@@ -37,10 +40,12 @@ public class GameManager : Singleton<GameManager>
     public GameState CurrentGameState { get; private set; } = GameState.InMenu;
     public float CurrentRunTime { get; private set; }
     public float LastRunTime { get; private set; }
+    public float BestTime { get; private set; }
     public UIManager UIManager => uiManager;
     public SoundManager SoundManager => soundManager;
 
     private bool TimerRunning => CurrentGameState == GameState.InGame;
+    private readonly List<float> leaderboardScores = new();
 
     protected override void Awake()
     {
@@ -51,6 +56,7 @@ public class GameManager : Singleton<GameManager>
             return;
         }
 
+        LoadSavedScores();
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
@@ -113,19 +119,19 @@ public class GameManager : Singleton<GameManager>
         backgroundManager?.Initialize();
         SetGameState(GameState.InMenu);
         UIManager?.InitializeForMenu();
+        UIManager?.UpdateLeaderboardDisplay(BestTime, leaderboardScores);
     }
 
     public void GameOver()
     {
-        if (CurrentGameState == GameState.GameOver)
+        if (CurrentGameState == GameState.GameOver || gameOverRoutine != null)
         {
             return;
         }
 
         LastRunTime = CurrentRunTime;
         SetGameState(GameState.GameOver);
-        UIManager?.ShowGameOver(LastRunTime);
-        SceneManager.LoadScene(GameOverSceneName);
+        gameOverRoutine = StartCoroutine(HandleGameOverTransition());
     }
 
     public void ReturnToTitle()
@@ -170,6 +176,7 @@ public class GameManager : Singleton<GameManager>
             case StartSceneName:
                 SetGameState(GameState.InMenu);
                 UIManager?.InitializeForMenu();
+                UIManager?.UpdateLeaderboardDisplay(BestTime, leaderboardScores);
                 break;
 
             case GameSceneName:
@@ -184,12 +191,14 @@ public class GameManager : Singleton<GameManager>
                     nextDifficultyTime = difficultyIncreaseInterval;
                     SetGameState(GameState.InMenu);
                     UIManager?.InitializeForMenu();
+                    UIManager?.UpdateLeaderboardDisplay(BestTime, leaderboardScores);
                 }
                 break;
 
             case GameOverSceneName:
                 SetGameState(GameState.GameOver);
                 UIManager?.ShowGameOver(LastRunTime);
+                UIManager?.UpdateLeaderboardDisplay(BestTime, leaderboardScores);
                 break;
         }
     }
@@ -257,6 +266,28 @@ public class GameManager : Singleton<GameManager>
         player.speed = originalPlayerSpeed;
         segmentSpawner.minGap = originalMinGap;
         segmentSpawner.maxGap = originalMaxGap;
+    }
+
+    private void LoadSavedScores()
+    {
+        BestTime = SaveSystem.LoadBestTime();
+        leaderboardScores.Clear();
+        leaderboardScores.AddRange(SaveSystem.LoadLeaderboard());
+    }
+
+    private IEnumerator HandleGameOverTransition()
+    {
+        if (player != null)
+        {
+            yield return StartCoroutine(player.PlayGameOverFeedback());
+        }
+
+        SaveSystem.SaveTimer(LastRunTime);
+        LoadSavedScores();
+        UIManager?.ShowGameOver(LastRunTime);
+        UIManager?.UpdateLeaderboardDisplay(BestTime, leaderboardScores);
+        gameOverRoutine = null;
+        SceneManager.LoadScene(GameOverSceneName);
     }
 
     private void SetGameState(GameState state)

@@ -86,7 +86,7 @@ SpriteRenderer:
   m_SortingOrder: 1
   m_MaskInteraction: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
-  m_Color: {r: 0.4196079, g: 0.5568628, b: 0.1372549, a: 1}
+  m_Color: {r: 0, g: 1, b: 0, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -115,6 +115,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   fallGameOverY: -8
+  gameOverFlashDuration: 0.6
+  gameOverFlashInterval: 0.1
 --- !u!50 &1328660605438900861
 Rigidbody2D:
   serializedVersion: 5
@@ -131,7 +133,7 @@ Rigidbody2D:
   m_LinearDamping: 0
   m_AngularDamping: 0.05
   m_GravityScale: 1
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 6200000, guid: 1fa40731d6a116449a22beedf5ab20e3, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0

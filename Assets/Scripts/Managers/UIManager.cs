@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -10,6 +11,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameObject resetButton;
     [SerializeField] private TMP_Text timerText;
     [SerializeField] private TMP_Text finalTimeText;
+    [SerializeField] private Leaderboard leaderboardDisplay;
 
     public void BindSceneButtons(Scene scene)
     {
@@ -31,6 +33,7 @@ public class UIManager : MonoBehaviour
         SetActive(resetButton, false);
         SetActive(GetTimerDisplay(), false);
         SetActive(GetFinalTimeDisplay(), false);
+        SetActive(GetLeaderboardDisplay(), leaderboardDisplay != null);
         UpdateTimerDisplay(0f);
         UpdateFinalTimeDisplay(null);
     }
@@ -41,6 +44,7 @@ public class UIManager : MonoBehaviour
         SetActive(resetButton, true);
         SetActive(GetTimerDisplay(), true);
         SetActive(GetFinalTimeDisplay(), false);
+        SetActive(GetLeaderboardDisplay(), false);
         UpdateTimerDisplay(currentTime);
         UpdateFinalTimeDisplay(null);
     }
@@ -56,6 +60,7 @@ public class UIManager : MonoBehaviour
         SetActive(GetTimerDisplay(), false);
         SetActive(resetButton, false);
         SetActive(GetFinalTimeDisplay(), true);
+        SetActive(GetLeaderboardDisplay(), leaderboardDisplay != null);
         UpdateFinalTimeDisplay(finalTime);
     }
 
@@ -71,7 +76,17 @@ public class UIManager : MonoBehaviour
             : string.Empty;
     }
 
-    private static string FormatTime(float timeInSeconds)
+    public void UpdateLeaderboardDisplay(float bestTime, List<float> leaderboard)
+    {
+        if (leaderboardDisplay == null)
+        {
+            return;
+        }
+
+        leaderboardDisplay.Initialize(leaderboard, bestTime);
+    }
+
+    public static string FormatTime(float timeInSeconds)
     {
         if (timeInSeconds < 0f)
         {
@@ -107,6 +122,11 @@ public class UIManager : MonoBehaviour
     private GameObject GetFinalTimeDisplay()
     {
         return finalTimeText != null ? finalTimeText.gameObject : null;
+    }
+
+    private GameObject GetLeaderboardDisplay()
+    {
+        return leaderboardDisplay != null ? leaderboardDisplay.gameObject : null;
     }
 
     private static GameObject FindSceneButton(Scene scene, GameManagerAction action)
